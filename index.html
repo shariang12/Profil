@@ -15,23 +15,40 @@
     }
 
     body {
-      background: #f5f7fa;
+      background: #0a0f1e; /* fallback gelap */
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 16px;
-      transition: background 0.2s;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Canvas untuk efek hacker */
+    #hacker-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none; /* biar tidak mengganggu klik */
+      opacity: 0.5; /* sedikit redup agar tidak terlalu mencolok di bawah container */
     }
 
     .container {
       max-width: 420px;
       width: 100%;
-      background: white;
+      background: rgba(255, 255, 255, 0.9); /* semi transparan agar efek terlihat sedikit di belakang */
+      backdrop-filter: blur(2px); /* sedikit blur untuk efek kaca */
       border-radius: 32px;
-      box-shadow: 0 20px 35px -8px rgba(0,0,0,0.2);
+      box-shadow: 0 20px 35px -8px rgba(0,0,0,0.5);
       padding: 24px 20px 32px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(255,255,255,0.3);
     }
 
     /* bahasa selector */
@@ -103,11 +120,12 @@
 
     .description ul {
       list-style: none;
-      background: #f8fafd;
+      background: rgba(248, 250, 253, 0.8);
       border-radius: 24px;
       padding: 20px 18px;
       margin-bottom: 28px;
       border: 1px solid #eef2f6;
+      backdrop-filter: blur(2px);
     }
 
     .description li {
@@ -160,15 +178,32 @@
       background: #1a1a1a;
     }
 
-    /* whatsapp */
+    /* whatsapp dengan animasi berdenyut */
     #wa-link {
       background: #25D366;
       color: white;
       box-shadow: 0 8px 18px rgba(37, 211, 102, 0.3);
+      animation: pulse 1.8s infinite ease-in-out;
     }
 
     #wa-link:hover {
       background: #20bd59;
+      animation: none; /* berhenti denyut saat hover */
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 8px 18px rgba(37, 211, 102, 0.3);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 12px 25px rgba(37, 211, 102, 0.5);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 8px 18px rgba(37, 211, 102, 0.3);
+      }
     }
 
     /* icon fontawesome ukuran */
@@ -202,6 +237,9 @@
   </style>
 </head>
 <body>
+  <!-- Canvas untuk efek hacker -->
+  <canvas id="hacker-canvas"></canvas>
+
   <div class="container">
     <!-- pilihan bahasa -->
     <div class="language-selector">
@@ -213,9 +251,9 @@
       </select>
     </div>
 
-    <!-- logo usaha PNG -->
+    <!-- logo usaha PNG dari URL yang diberikan -->
     <div class="logo">
-      <img src="logo.png" alt="Logo Shariang Development" id="logo" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23e2e8f0\'/%3E%3Ctext x=\'50\' y=\'55\' font-size=\'14\' text-anchor=\'middle\' fill=\'%23333\' font-family=\'Arial\'%3ESHARIANG%3C/text%3E%3C/svg%3E';">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgEqAgYMIVBhoUKlw8bFkY9EkyHSQCRF7vbfIUHXMwNtrVWYcASGZoix38xFBUsLwd9Uqndsdlhv2Do0e17E4IiwDhuXWKvvlppPgjSjnP89vBmbJU4A-n68MjZEsvOuFL9JxP8o-t2o1K9McGTon69sQCDxoS-O-d8YbeP_ecJAFFdiBjrGx1q7-2Vww/s512/1000309882.png" alt="Logo Shariang Development" id="logo" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23e2e8f0\'/%3E%3Ctext x=\'50\' y=\'55\' font-size=\'14\' text-anchor=\'middle\' fill=\'%23333\' font-family=\'Arial\'%3ESHARIANG%3C/text%3E%3C/svg%3E';">
     </div>
 
     <!-- nama usaha (statis, tidak diterjemahkan) -->
@@ -234,7 +272,7 @@
 
     <!-- tautan TikTok dan WhatsApp dengan icon asli -->
     <div class="links">
-      <a href="#" target="_blank" id="tiktok-link">
+      <a href="https://www.tiktok.com/@ndre_shariang?_r=1&_t=ZS-943Qqi1XmmV" target="_blank" id="tiktok-link">
         <i class="fab fa-tiktok"></i> <span data-i18n="tiktok">Akun TikTok</span>
       </a>
       <!-- link whatsapp: nomor +6283852330333, pesan otomatis -->
@@ -246,7 +284,78 @@
 
   <script>
     (function() {
-      // Terjemahan untuk 4 bahasa
+      // ================== EFEK HACKER CANVAS ==================
+      const canvas = document.getElementById('hacker-canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Warna disesuaikan dengan logo (cyan / teal dari logo)
+      // Ambil warna dari logo? Sulit. Kita pilih warna hijau/cyan terang.
+      const primaryColor = '#00ffff'; // cyan terang
+      const secondaryColor = '#0088cc'; // biru lebih gelap untuk variasi
+
+      let width, height;
+      let columns = [];
+      const fontSize = 16; // ukuran huruf
+
+      function initCanvas() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        // jumlah kolom = lebar / fontSize
+        const cols = Math.floor(width / fontSize) + 10;
+        columns = [];
+        for (let i = 0; i < cols; i++) {
+          columns[i] = Math.floor(Math.random() * height / fontSize); // posisi awal acak
+        }
+      }
+
+      // karakter yang akan jatuh (huruf, angka, simbol)
+      const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+-=[]{}|;:,.<>?/`~';
+
+      function draw() {
+        // efek transparan untuk trail (semakin kecil alpha, semakin panjang trail)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; // hitam dengan alpha rendah
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.font = fontSize + 'px monospace';
+
+        for (let i = 0; i < columns.length; i++) {
+          // pilih karakter acak
+          const char = chars[Math.floor(Math.random() * chars.length)];
+          // posisi x
+          const x = i * fontSize;
+          // posisi y
+          const y = columns[i] * fontSize;
+
+          // warna gradasi: campuran primary dan secondary
+          const gradient = ctx.createLinearGradient(x, y, x + fontSize, y + fontSize);
+          gradient.addColorStop(0, primaryColor);
+          gradient.addColorStop(0.6, secondaryColor);
+          ctx.fillStyle = gradient;
+
+          // gambar karakter
+          ctx.fillText(char, x, y);
+
+          // reset kolom jika sudah melewati batas bawah, atau kadang-kadang reset secara acak
+          if (y > height && Math.random() > 0.975) {
+            columns[i] = 0;
+          } else {
+            columns[i] = columns[i] + 1;
+          }
+        }
+      }
+
+      // inisialisasi dan jalankan animasi
+      initCanvas();
+      setInterval(draw, 45); // kecepatan jatuh
+
+      window.addEventListener('resize', () => {
+        initCanvas();
+      });
+
+      // ================== TERJEMAHAN BAHASA ==================
       const translations = {
         id: {
           title: "Jasa Google Console",
@@ -286,12 +395,10 @@
         }
       };
 
-      // elemen-elemen dengan data-i18n (hanya span di dalam link, dan h1/li)
       const i18nElements = document.querySelectorAll('[data-i18n]');
       const langSelect = document.getElementById('langSelect');
       const body = document.body;
 
-      // fungsi untuk mengubah bahasa
       function changeLanguage(lang) {
         if (!translations[lang]) return;
 
@@ -304,7 +411,6 @@
           }
         });
 
-        // atur arah teks untuk bahasa arab
         if (lang === 'ar') {
           body.setAttribute('dir', 'rtl');
         } else {
@@ -323,11 +429,7 @@
       langSelect.value = defaultLang;
       changeLanguage(defaultLang);
 
-      // Ganti link TikTok dengan akun yang sesuai (contoh)
-      const tiktokLink = document.getElementById('tiktok-link');
-      tiktokLink.href = 'https://www.tiktok.com/@ndre_shariang?_r=1&_t=ZS-943Q9O9JhXc'; // Ganti dengan username asli
-
-      // Nomor WhatsApp sudah benar
+      // link TikTok sudah diisi manual di href, tidak perlu diubah lagi
     })();
   </script>
 </body>
